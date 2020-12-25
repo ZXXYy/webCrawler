@@ -1,0 +1,41 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+
+    // Apply the application plugin to add support for building a CLI application.
+    id 'application'
+}
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:29.0-jre'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.13'
+    
+    compile group: 'edu.uci.ics', name: 'crawler4j', version: '4.4.0'
+    // jsoup HTML parser library @ https://jsoup.org/
+	compile 'org.jsoup:jsoup:1.13.1'
+	// https://mvnrepository.com/artifact/org.json/json
+	compile group: 'org.json', name: 'json', version: '20090211'
+	// sqlite
+	compile group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+	
+	// local jar packets
+	//compile files('libs/lucene-core-4.10.0.jar')
+	//compile files('libs/lucene-queries-4.10.0.jar')
+	//compile files('libs/lucene-queryparser-4.10.0.jar')
+	//compile files('libs/lucene-core-4.10.0.jar')
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'web_crawler_3170102934.BasicCrawler'
+}
