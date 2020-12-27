@@ -39,7 +39,7 @@ public class text_index {
 			IndexWriterConfig conf=new IndexWriterConfig(Version.LUCENE_4_10_0,analyzer);
 			iwr=new IndexWriter(dir,conf);//建立IndexWriter。固定套路
 			
-			File file = new File("data/test.json");
+			File file = new File("data/Books.json");
 		    BufferedReader reader = null;
 		    reader = new BufferedReader(new FileReader(file));
 		    String tempStr;

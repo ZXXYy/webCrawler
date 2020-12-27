@@ -40,7 +40,7 @@ public class Controller {
         
         // Be polite: Make sure that we don't send more than 1 request per second (1000 milliseconds between requests).
         // Otherwise it may overload the target servers.
-        config.setPolitenessDelay(1000);
+        config.setPolitenessDelay(500);
 
         // You can set the maximum crawl depth here. The default value is -1 for unlimited depth.
         config.setMaxDepthOfCrawling(10);
@@ -83,8 +83,8 @@ public class Controller {
         //controller.addSeed("https://www.ics.uci.edu/");
         //controller.addSeed("https://www.ics.uci.edu/~lopes/");
        //controller.addSeed("https://www.ics.uci.edu/~welling/");
-//        controller.addSeed("http://book.dangdang.com/01.01.htm");
-//        controller.addSeed("http://book.dangdang.com/01.28.htm");
+        controller.addSeed("http://book.dangdang.com/01.01.htm");
+        controller.addSeed("http://book.dangdang.com/01.28.htm");
         //controller.addSeed("http://book.dangdang.com/");
         //controller.addSeed("http://product.dangdang.com/29158965.html");
         controller.addSeed("http://book.dangdang.com/study");
