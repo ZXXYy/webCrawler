@@ -54,13 +54,13 @@ public class SQLiteJDBC
 	  Statement stmt = null;
 	  try {
 		stmt = c.createStatement();
-		ResultSet rset = stmt.executeQuery("select * from Books where ID=="+book.hashCode()); 
+		ResultSet rset = stmt.executeQuery("select * from Books_new where ID=="+book.hashCode()); 
 	    int rowCount = 0; 
 	    while (rset.next()) { 
 	        rowCount++; 
 	    }
 		if(rowCount>0) return;
-		String sql = "INSERT INTO Books (ID, URL,TITLE,AUTHOR,CLASSIFY,PUBLISHER, IMG,"+
+		String sql = "INSERT INTO Books_new (ID, URL,TITLE,AUTHOR,CLASSIFY,PUBLISHER, IMG,"+
 		  		"RECOMMEND, BOOK_INTRO, AUTHOR_INTRO, CONTENT, PRICE) " +
                "VALUES ('"+book.hashCode()+"','"+
 		  				  book.getUrl()+"','"+

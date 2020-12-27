@@ -1,6 +1,7 @@
 package web_crawler_3170102934;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -17,6 +18,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.xml.builders.DuplicateFilterBuilder;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -25,6 +27,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wltea.analyzer.lucene.IKAnalyzer;
@@ -39,28 +42,26 @@ public class text_index {
 			IndexWriterConfig conf=new IndexWriterConfig(Version.LUCENE_4_10_0,analyzer);
 			iwr=new IndexWriter(dir,conf);//建立IndexWriter。固定套路
 			
-			File file = new File("data/test.json");
-		    BufferedReader reader = null;
-		    reader = new BufferedReader(new FileReader(file));
-		    String tempStr;
-		    while ((tempStr = reader.readLine()) != null) {
-		    	JSONObject jsonObject = new JSONObject (tempStr);
-		    	bookInfo book = new bookInfo(jsonObject.getString("url"),
-		    								jsonObject.getString("title"),
-								    		jsonObject.getString("author"),
-								    		jsonObject.getString("classify"),
-								    		jsonObject.getString("publish"),
-								    		jsonObject.getString("img"),
-								    		jsonObject.getString("price"),
-								    		jsonObject.getString("编辑推荐"),
-								    		jsonObject.getString("内容简介"),
-								    		jsonObject.getString("作者简介"),
-								    		jsonObject.getString("目　　录")
-		    								 );
+			String filename = "data/Books.json";
+			JSONArray jsonArray = JSONUtil.parseJSONFile(filename);
+			for(int i = 0;i<jsonArray.length();i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				bookInfo book = new bookInfo(jsonObject.getString("URL"),
+					 						 jsonObject.getString("TITLE"),
+								    		jsonObject.getString("AUTHOR"),
+								    		jsonObject.getString("CLASSIFY"),
+								    		jsonObject.getString("PUBLISHER"),
+								    		jsonObject.getString("IMG"),
+								    		jsonObject.getString("PRICE"),
+								    		jsonObject.getString("RECOMMEND"),
+								    		jsonObject.getString("BOOK_INTRO"),
+								    		jsonObject.getString("AUTHOR_INTRO"),
+								    		jsonObject.getString("CONTENT")
+											 );
 				Document doc=getDocument(book);
 				iwr.addDocument(doc);//添加doc，Lucene的检索是以document为基本单位
-		    }
-		    reader.close();
+			}
+		    //reader.close();
 			iwr.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -74,6 +75,7 @@ public class text_index {
 	public Document getDocument(bookInfo book){
 		//doc中内容由field构成，在检索过程中，Lucene会按照指定的Field依次搜索每个document的该项field是否符合要求。
 		Document doc=new Document();
+		Field f0=new TextField("Key",book.getUrl(), Field.Store.YES);
 		Field f1=new TextField("title",book.getTitle(),Field.Store.YES);
 		Field f2=new TextField("author",book.getAuthor(),Field.Store.YES);
 		Field f3=new TextField("classify",book.getClassify(),Field.Store.YES);
@@ -85,6 +87,7 @@ public class text_index {
 		Field f9=new TextField("author_intro",book.getAuthor_intro(),Field.Store.YES);
 		Field f10=new TextField("content",book.getContent(),Field.Store.YES);
 		
+		doc.add(f0);
 		doc.add(f1);
 		doc.add(f2);
 		doc.add(f3);
@@ -109,14 +112,16 @@ public class text_index {
 			QueryParser parser = new QueryParser(Version.LUCENE_4_10_0, index, analyzer);
 			
 			Query query=parser.parse(queryStr);
-			TopDocs hits=searcher.search(query,1);//前面几行代码也是固定套路，使用时直接改field和关键词即可
-//			HashSet<ScoreDoc> hitsDoc = new HashSet<ScoreDoc>();
-//			for(ScoreDoc doc:hits.scoreDocs) {
-//				hitsDoc.add(doc);
-//			}
+			HashSet<String> Keys = new HashSet();
+			
+			TopDocs hits=searcher.search(query,10);//前面几行代码也是固定套路，使用时直接改field和关键词即可
+			System.out.println("查询结果的总条数："+ hits.totalHits);
 			int count = 1;
 			for(ScoreDoc doc:hits.scoreDocs){
 				Document d=searcher.doc(doc.doc);
+				//System.out.println(d.get("Key"));
+				if(Keys.contains(d.get("Key"))) continue;
+				Keys.add(d.get("Key"));
 				System.out.println(count+".");
 				System.out.println("书名："+d.get("title"));
 				System.out.println("作者："+d.get("author"));
