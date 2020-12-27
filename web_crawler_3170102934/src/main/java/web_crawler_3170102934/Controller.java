@@ -83,13 +83,11 @@ public class Controller {
         //controller.addSeed("https://www.ics.uci.edu/");
         //controller.addSeed("https://www.ics.uci.edu/~lopes/");
        //controller.addSeed("https://www.ics.uci.edu/~welling/");
-        controller.addSeed("http://book.dangdang.com/01.01.htm");
-        controller.addSeed("http://book.dangdang.com/01.28.htm");
-        //controller.addSeed("http://book.dangdang.com/");
-        //controller.addSeed("http://product.dangdang.com/29158965.html");
-        controller.addSeed("http://book.dangdang.com/study");
+        //controller.addSeed("http://book.dangdang.com/01.01.htm");
+        //controller.addSeed("http://book.dangdang.com/01.28.htm");
+        //controller.addSeed("http://book.dangdang.com/study");
         controller.addSeed("http://book.dangdang.com/");
-        controller.addSeed("http://book.dangdang.com/01.07.htm");
+        //controller.addSeed("http://book.dangdang.com/01.07.htm");
         
         
         

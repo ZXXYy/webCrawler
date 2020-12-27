@@ -71,7 +71,7 @@ public class BasicCrawler extends WebCrawler {
         // Only accept the url if it is in the "http://product.dangdang.com" or "http://book.dangdang.com" domain
         // and protocol is "http".
         return href.startsWith("http://book.dangdang.com") || 
-        	 href.startsWith("http://product.dangdang.com");
+        	 href.startsWith("http://product.dangdang.com") ;
     }
 
     /**
@@ -129,7 +129,8 @@ public class BasicCrawler extends WebCrawler {
             map.put("price", price);
             map.put("classify", new String(classify));
             map.put("img", img_src);
-            book.setUrl(url);
+            String[] actualURL = url.split("html");
+            book.setUrl(actualURL[0]+"html");
             book.setTitle(title);
             book.setAuthor(author);
             book.setPublisher(publish);
