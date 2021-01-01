@@ -35,12 +35,12 @@ public class Controller {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 Edg/87.0.664.66"};
         Random random = new Random();
         //ua[random.nextInt(15)]
-        config.setCrawlStorageFolder("/Users/zhengxiaoye/Desktop/Java应用技术/homework/homework4/web_crawler/web_crawler_3170102934/data/tmp");
+        config.setCrawlStorageFolder("data/tmp");
         config.setUserAgentString(ua[random.nextInt(15)]);
         
         // Be polite: Make sure that we don't send more than 1 request per second (1000 milliseconds between requests).
         // Otherwise it may overload the target servers.
-        config.setPolitenessDelay(500);
+        config.setPolitenessDelay(10000);
 
         // You can set the maximum crawl depth here. The default value is -1 for unlimited depth.
         config.setMaxDepthOfCrawling(10);
@@ -52,8 +52,8 @@ public class Controller {
         config.setIncludeBinaryContentInCrawling(false);
 
         // Do you need to set a proxy? If so, you can use:
-        // config.setProxyHost("proxyserver.example.com");
-        // config.setProxyPort(8080);
+        // config.setProxyHost("112.111.217.107");
+        // config.setProxyPort(9999);
 
         // If your proxy also needs authentication:
         // config.setProxyUsername(username); config.getProxyPassword(password);
@@ -80,14 +80,13 @@ public class Controller {
         // For each crawl, you need to add some seed urls. These are the first
         // URLs that are fetched and then the crawler starts following links
         // which are found in these pages
-        //controller.addSeed("https://www.ics.uci.edu/");
-        //controller.addSeed("https://www.ics.uci.edu/~lopes/");
-       //controller.addSeed("https://www.ics.uci.edu/~welling/");
         //controller.addSeed("http://book.dangdang.com/01.01.htm");
         //controller.addSeed("http://book.dangdang.com/01.28.htm");
         //controller.addSeed("http://book.dangdang.com/study");
         controller.addSeed("http://book.dangdang.com/");
-        //controller.addSeed("http://book.dangdang.com/01.07.htm");
+        controller.addSeed("http://book.dangdang.com/01.07.htm");
+        controller.addSeed("http://book.dangdang.com/01.28.htm");
+        controller.addSeed("http://book.dangdang.com/study");
         
         
         
