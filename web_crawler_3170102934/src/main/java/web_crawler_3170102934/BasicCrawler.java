@@ -83,7 +83,7 @@ public class BasicCrawler extends WebCrawler {
     public void visit(Page page) {
         int docid = page.getWebURL().getDocid();
         String url = page.getWebURL().getURL();
-        bookInfo book = new bookInfo();
+        BookInfo book = new BookInfo();
         logger.debug("Docid: {}", docid);
         logger.info("URL: {}", url);
 

@@ -2,7 +2,7 @@ package web_crawler_3170102934;
 
 import java.io.InputStream;
 
-public class bookInfo {
+public class BookInfo {
 	private String title;
 	private String author;
 	private String classify;
@@ -23,10 +23,10 @@ public class bookInfo {
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
-	public bookInfo() 
+	public BookInfo() 
 	{
 	}
-	public bookInfo(String url, String title, String author,String classify,String publisher, 
+	public BookInfo(String url, String title, String author,String classify,String publisher, 
 			 		 String img_src, String price,String recommend,String book_intro,String author_intro,String content)
 	{
 		this.url = url;

@@ -33,8 +33,13 @@ import org.json.JSONObject;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 import java.sql.*;
 
-public class text_index {
-	
+public class TextIndex {
+	public static void main(String[] args) {
+		TextIndex w=new TextIndex();
+		String filePath="data/index";//创建索引的存储目录
+		w.createIndex(filePath);//创建索引
+		System.out.println("Index created!");
+	}
 	public void createIndex(String filePath){
 		File f=new File(filePath);
 		IndexWriter iwr=null;
@@ -49,7 +54,7 @@ public class text_index {
 			String sql = "select * from Books";
 		    ResultSet rs = stmt.executeQuery(sql);
 		    while(rs.next()) {
-		    	bookInfo book = new bookInfo(rs.getString("URL"),
+		    	BookInfo book = new BookInfo(rs.getString("URL"),
 		    			rs.getString("TITLE"),
 		    			rs.getString("AUTHOR"),
 		    			rs.getString("CLASSIFY"),
@@ -99,7 +104,7 @@ public class text_index {
 		}
 	}
 	
-	public Document getDocument(bookInfo book){
+	public Document getDocument(BookInfo book){
 		//doc中内容由field构成，在检索过程中，Lucene会按照指定的Field依次搜索每个document的该项field是否符合要求。
 		Document doc=new Document();
 		Field f0=new TextField("Key",book.getUrl(), Field.Store.YES);
@@ -140,7 +145,6 @@ public class text_index {
 			
 			Query query=parser.parse(queryStr);
 			HashSet<String> Keys = new HashSet();
-			Connection c = SQLiteJDBC.ConnectToDB();
 			TopDocs hits=searcher.search(query,10);//前面几行代码也是固定套路，使用时直接改field和关键词即可
 			System.out.println("查询结果的总条数："+ hits.totalHits);
 			int count = 1;

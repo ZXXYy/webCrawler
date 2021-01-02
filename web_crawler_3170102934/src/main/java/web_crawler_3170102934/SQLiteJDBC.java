@@ -13,7 +13,7 @@ public class SQLiteJDBC
 	  Connection c = null;
 	  try {
 		  Class.forName("org.sqlite.JDBC");
-	      c = DriverManager.getConnection("jdbc:sqlite:/Users/zhengxiaoye/Desktop/Java应用技术/homework/homework4/dangdangBook.db");
+	      c = DriverManager.getConnection("jdbc:sqlite:data/dangdangBook.db");
 	      c.setAutoCommit(false);
 	      System.out.println("Opened database successfully");
 	  }catch ( Exception e ) {
@@ -22,7 +22,7 @@ public class SQLiteJDBC
 	  }
 	  return c;
   }
-  public static void Insert(Connection c, bookInfo book) {
+  public static void Insert(Connection c, BookInfo book) {
 	  Statement stmt = null;
 	  try {
 		stmt = c.createStatement();
