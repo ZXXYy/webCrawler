@@ -5,9 +5,9 @@ import java.util.Scanner;
 public class Main {
 	
 	public static void main(String[] args) {
-		text_index w=new text_index();
+		TextIndex w=new TextIndex();
 		String filePath="data/index";//创建索引的存储目录
-		w.createIndex(filePath);//创建索引
+		
 		Scanner s = new Scanner(System.in);
 		System.out.println("欢迎使用图书搜索引擎！");
 		while(true) {
@@ -33,6 +33,9 @@ public class Main {
 				case 4:
 					index = "publisher";
 					break;
+				default:
+					System.out.println("请输入有效的检索类别！");
+					continue;
 			}
 			System.out.println("请输入您想要检索的内容：");
 			String queryStr = s.nextLine();

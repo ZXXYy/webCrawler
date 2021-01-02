@@ -13,6 +13,7 @@ import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -82,21 +83,21 @@ public class BasicCrawler extends WebCrawler {
     public void visit(Page page) {
         int docid = page.getWebURL().getDocid();
         String url = page.getWebURL().getURL();
-        bookInfo book = new bookInfo();
+        BookInfo book = new BookInfo();
         logger.debug("Docid: {}", docid);
         logger.info("URL: {}", url);
 
         if (page.getParseData() instanceof HtmlParseData && url.startsWith("http://product.dangdang.com")) {
             HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
             String html = htmlParseData.getHtml();
-            // use the map to store data
-            Map<String, String> map = new HashMap<String,String>(); 
             // parse the html
             Document document = Jsoup.parse(html);
             
+            // get title
             Element title_ele = document.getElementsByTag("h1").first();
             String title = title_ele.attr("title");
             
+            // get author and publisher
             String author = null;
             String publish = null;
             Element messbox = document.getElementsByClass("messbox_info").first();
@@ -108,9 +109,11 @@ public class BasicCrawler extends WebCrawler {
             		publish = info.text();
             }
             
+            // get price
             Element price_ele = document.getElementById("dd-price");
             String price = price_ele.text();
             
+            // get classification info
             Element class_ele = document.getElementById("detail-category-path");
             Elements class_cols = class_ele.getElementsByClass("lie");
             StringBuffer classify = new StringBuffer();
@@ -118,17 +121,11 @@ public class BasicCrawler extends WebCrawler {
             	classify.append(class_col.text()+"\n");
             }
             
+            // get img URL
             Element img_ele = document.getElementById("largePicDiv");
             Element img = img_ele.getElementById("largePic");
             String img_src = img.attr("src");
-            StringBuffer crawled = new StringBuffer("title="+title+"\n author="+author+"\n publish="+publish+
-					"\n price="+price+"\nclassify="+classify+"\nimg="+img_src+"\n");
-            map.put("title", title);
-            map.put("author", author);
-            map.put("publish", publish);
-            map.put("price", price);
-            map.put("classify", new String(classify));
-            map.put("img", img_src);
+            
             String[] actualURL = url.split("html");
             book.setUrl(actualURL[0]+"html");
             book.setTitle(title);
@@ -138,7 +135,7 @@ public class BasicCrawler extends WebCrawler {
             book.setClassify(new String(classify));
             book.setImg_src(img_src);
             
-            // get the ajax achieved info
+            // generate the ajax URL
             StringBuffer request_url=new StringBuffer("http://product.dangdang.com/index.php?r=callback%2Fdetail&");
             Elements js = document.getElementsByTag("script").eq(1);
             
@@ -167,50 +164,65 @@ public class BasicCrawler extends WebCrawler {
     			}
     		}
             
-            Set<String> details = new HashSet<String>();
-            details.add("产品特色");
-            details.add("编辑推荐");
-            details.add("内容简介");
-            details.add("作者简介");
-            details.add("媒体评论");
-            details.add("目　　录");
-            details.add("免费在线读");
-            Set<String> extracted = new HashSet<String>();
-            extracted.add("编辑推荐");
-            extracted.add("内容简介");
-            extracted.add("作者简介");
-            extracted.add("目　　录");
+            
+         // get the ajax achieved info
             try {
-				Document doc = Jsoup.connect(new String(request_url)).
-								userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.38 Safari/537.36").get();
-				String t = unicodeToString(doc.text());
+            	org.jsoup.Connection conn = Jsoup.connect(new String(request_url));
+				conn.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0");
+            	Response response = conn.execute();
+            	int statusCode = response.statusCode();
+            	int count = 0;
+            	// if fail, try again
+            	while(statusCode!=200 & count<=10) {
+            		conn = Jsoup.connect(new String(request_url));
+    				conn.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0");
+                	response = conn.execute();
+            		count++;
+            	}
+            	Document doc = conn.get();
+            	
+            	//get the relative html info
+            	String t = unicodeToString(doc.text());
 				JSONObject jsonObject = new JSONObject (t);
 				jsonObject = new JSONObject(jsonObject.getString("data"));
-				t = jsonObject.getString("html");						//获得相关的html
+				t = jsonObject.getString("html");						
 				
-				// 从html中获得编辑推荐，内容简介，作者简介，目　　录的信息
+				Set<String> details = new HashSet<String>();
+	            details.add("产品特色");
+	            details.add("编辑推荐");
+	            details.add("内容简介");
+	            details.add("作者简介");
+	            details.add("媒体评论");
+	            details.add("目　　录");
+	            details.add("免费在线读");
+	            Set<String> extracted = new HashSet<String>();
+	            extracted.add("编辑推荐");
+	            extracted.add("内容简介");
+	            extracted.add("作者简介");
+	            extracted.add("目　　录");
+	            // use the map to store data
+	            Map<String, String> map = new HashMap<String,String>(); 
+	            
 				String[] data = t.split("[</a-z>\t\r\n ]+");
-				StringBuffer crawled_detail = new StringBuffer();
 				StringBuffer temp_data = new StringBuffer();
 				Set<String> hasType = new HashSet();
 				String type = null;
 				boolean flag = false;
+				// 从html中获得编辑推荐，内容简介，作者简介，目　　录的信息
 				for(String p:data) {
 					if(details.contains(p) && extracted.contains(p)) {
 						if(flag) {
 							hasType.add(type);
-							crawled_detail.append(temp_data);
 							map.put(type, new String(temp_data));
 						}
+						// the new target info
 						flag = true;
 						type = p;
-						crawled_detail.append(p+":\n");
 						temp_data.delete(0,temp_data.length());
 					}
 					else if(details.contains(p)) {
 						if(flag) {
 							hasType.add(type);
-							crawled_detail.append(temp_data);
 							map.put(type, new String(temp_data));
 						}
 						flag = false;
@@ -220,6 +232,8 @@ public class BasicCrawler extends WebCrawler {
 						temp_data.append(p+"\n");
 					}
 				}
+				
+				// 将筛选出来的信息存入到bookInfo中
 				for(String temp: extracted) {
 					if(!hasType.contains(temp)) {
 						map.put(temp, "暂无");
@@ -238,7 +252,6 @@ public class BasicCrawler extends WebCrawler {
 					}
 				}
 				
-				crawled.append(crawled_detail);
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -247,37 +260,14 @@ public class BasicCrawler extends WebCrawler {
 				e.printStackTrace();
 			}
             
-            // 保存爬下来的数据
-            
-            String filepath = "/Users/zhengxiaoye/Desktop/Java应用技术/homework/homework4/web_crawler/web_crawler_3170102934/data/html.txt";
-            String filepath2 = "/Users/zhengxiaoye/Desktop/Java应用技术/homework/homework4/web_crawler/web_crawler_3170102934/data/xhr.txt";
-            String data_path = "data/data2.json";
-            File file = new File(filepath);
-            File file2 = new File(filepath2);
-            File data_file = new File(data_path);
-			FileOutputStream fileOutputStream = null;
-			FileOutputStream fileOutputStream2 = null;
-			FileOutputStream fileOutputStream3 = null;
-			try {
-				fileOutputStream = new FileOutputStream(file);
-				fileOutputStream2 = new FileOutputStream(file2);
-				fileOutputStream3 = new FileOutputStream(data_file,true);
-				fileOutputStream.write(html.getBytes());
-				fileOutputStream2.write((new String(crawled)).getBytes());
-				JSONObject jsonObj=new JSONObject(map);
-				fileOutputStream3.write((jsonObj.toString()+"\n").getBytes());
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+            // 保存爬下来的数据到数据库中
+            logger.debug("======Database insertion======");
 			Connection c = SQLiteJDBC.ConnectToDB();
 			SQLiteJDBC.Insert(c, book);
-			logger.debug("======Database insertion======");
+			logger.debug("======Database insertion finished!======");
         }
 
+        // 输出爬虫的返回头信息
         Header[] responseHeaders = page.getFetchResponseHeaders();
         if (responseHeaders != null) {
             logger.debug("Response headers:");
@@ -285,19 +275,9 @@ public class BasicCrawler extends WebCrawler {
                 logger.debug("\t{}: {}", header.getName(), header.getValue());
             }
         }
-
         logger.debug("=============");
     }
-//    public void onBeforeExit() {
-//        if (SQLiteJDBCService != null) {
-//        	try {
-//				SQLiteJDBCService.close();
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//        }
-//    }
+
     
     public static String unicodeToString(String str) {
         Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))");

@@ -1,6 +1,8 @@
 package web_crawler_3170102934;
 
-public class bookInfo {
+import java.io.InputStream;
+
+public class BookInfo {
 	private String title;
 	private String author;
 	private String classify;
@@ -12,6 +14,7 @@ public class bookInfo {
 	private String content;
 	private String price;
 	private String url;
+
 	
 	@Override
 	public int hashCode() {
@@ -20,10 +23,10 @@ public class bookInfo {
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
-	public bookInfo() 
+	public BookInfo() 
 	{
 	}
-	public bookInfo(String url, String title, String author,String classify,String publisher, 
+	public BookInfo(String url, String title, String author,String classify,String publisher, 
 			 		 String img_src, String price,String recommend,String book_intro,String author_intro,String content)
 	{
 		this.url = url;
@@ -37,7 +40,7 @@ public class bookInfo {
 		this.book_intro = book_intro;
 		this.author_intro = author_intro;
 		this.content = content;
-		
+
 	}
 	public String getTitle() {
 		return title;
@@ -72,6 +75,7 @@ public class bookInfo {
 	public String getUrl() {
 		return url;
 	}
+	
 	
 	public void setTitle(String title) {
 		this.title = title;

@@ -31,8 +31,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wltea.analyzer.lucene.IKAnalyzer;
-public class text_index {
-	
+import java.sql.*;
+
+public class TextIndex {
+	public static void main(String[] args) {
+		TextIndex w=new TextIndex();
+		String filePath="data/index";//创建索引的存储目录
+		w.createIndex(filePath);//创建索引
+		System.out.println("Index created!");
+	}
 	public void createIndex(String filePath){
 		File f=new File(filePath);
 		IndexWriter iwr=null;
@@ -41,38 +48,63 @@ public class text_index {
 			Analyzer analyzer = new IKAnalyzer();
 			IndexWriterConfig conf=new IndexWriterConfig(Version.LUCENE_4_10_0,analyzer);
 			iwr=new IndexWriter(dir,conf);//建立IndexWriter。固定套路
-			
-			String filename = "data/Books.json";
-			JSONArray jsonArray = JSONUtil.parseJSONFile(filename);
-			for(int i = 0;i<jsonArray.length();i++) {
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				bookInfo book = new bookInfo(jsonObject.getString("URL"),
-					 						 jsonObject.getString("TITLE"),
-								    		jsonObject.getString("AUTHOR"),
-								    		jsonObject.getString("CLASSIFY"),
-								    		jsonObject.getString("PUBLISHER"),
-								    		jsonObject.getString("IMG"),
-								    		jsonObject.getString("PRICE"),
-								    		jsonObject.getString("RECOMMEND"),
-								    		jsonObject.getString("BOOK_INTRO"),
-								    		jsonObject.getString("AUTHOR_INTRO"),
-								    		jsonObject.getString("CONTENT")
-											 );
-				Document doc=getDocument(book);
-				iwr.addDocument(doc);//添加doc，Lucene的检索是以document为基本单位
-			}
+			Connection c = SQLiteJDBC.ConnectToDB();
+			Statement stmt = null;
+			stmt = c.createStatement();
+			String sql = "select * from Books";
+		    ResultSet rs = stmt.executeQuery(sql);
+		    while(rs.next()) {
+		    	BookInfo book = new BookInfo(rs.getString("URL"),
+		    			rs.getString("TITLE"),
+		    			rs.getString("AUTHOR"),
+		    			rs.getString("CLASSIFY"),
+		    			rs.getString("PUBLISHER"),
+		    			rs.getString("IMG"),
+		    			rs.getString("PRICE"),
+		    			rs.getString("RECOMMEND"),
+		    			rs.getString("BOOK_INTRO"),
+		    			rs.getString("AUTHOR_INTRO"),
+		    			rs.getString("CONTENT"));
+		    	Document doc=getDocument(book);
+		    	iwr.addDocument(doc);
+		    }
+		    c.close();
+//			String filename = "data/Books.json";
+//			JSONArray jsonArray = JSONUtil.parseJSONFile(filename);
+//			for(int i = 0;i<jsonArray.length();i++) {
+//				JSONObject jsonObject = jsonArray.getJSONObject(i);
+//				bookInfo book = new bookInfo(jsonObject.getString("URL"),
+//					 						 jsonObject.getString("TITLE"),
+//								    		jsonObject.getString("AUTHOR"),
+//								    		jsonObject.getString("CLASSIFY"),
+//								    		jsonObject.getString("PUBLISHER"),
+//								    		jsonObject.getString("IMG"),
+//								    		jsonObject.getString("PRICE"),
+//								    		jsonObject.getString("RECOMMEND"),
+//								    		jsonObject.getString("BOOK_INTRO"),
+//								    		jsonObject.getString("AUTHOR_INTRO"),
+//								    		jsonObject.getString("CONTENT")
+//											 );
+//				Document doc=getDocument(book);
+//				iwr.addDocument(doc);//添加doc，Lucene的检索是以document为基本单位
+//			}
 		    //reader.close();
 			iwr.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (JSONException e) {
+		}
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public Document getDocument(bookInfo book){
+	public Document getDocument(BookInfo book){
 		//doc中内容由field构成，在检索过程中，Lucene会按照指定的Field依次搜索每个document的该项field是否符合要求。
 		Document doc=new Document();
 		Field f0=new TextField("Key",book.getUrl(), Field.Store.YES);
@@ -113,7 +145,6 @@ public class text_index {
 			
 			Query query=parser.parse(queryStr);
 			HashSet<String> Keys = new HashSet();
-			
 			TopDocs hits=searcher.search(query,10);//前面几行代码也是固定套路，使用时直接改field和关键词即可
 			System.out.println("查询结果的总条数："+ hits.totalHits);
 			int count = 1;
@@ -133,12 +164,13 @@ public class text_index {
 				System.out.println("内容简介:\n"+d.get("book_intro"));
 				System.out.println("作者简介:\n"+d.get("author_intro"));
 				System.out.println("目录:\n"+d.get("content"));
+				
 				count++;
 			}
 		} catch (IOException | ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
 	}
 
 }
